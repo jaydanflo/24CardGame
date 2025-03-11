@@ -40,13 +40,37 @@ public class CardGameController {
     }
 
     private void updateCardImages() {
-        String basePath = "src/main/resources/CardImages";
+        String basePath = "src/main/resources/CardImages/";
 
-        card1Image.setImage(new Image(getClass().getResourceAsStream(basePath + cardValues[0] + ".png")));
-        card2Image.setImage(new Image(getClass().getResourceAsStream(basePath + cardValues[1] + ".png")));
-        card3Image.setImage(new Image(getClass().getResourceAsStream(basePath + cardValues[2] + ".png")));
-        card4Image.setImage(new Image(getClass().getResourceAsStream(basePath + cardValues[3] + ".png")));
+        String[] suits = {"hearts", "diamonds", "clubs", "spades"};
+
+        String[] valueNames = {"", "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+
+
+        for (int i = 0; i < 4; i++) {
+            int cardValue = cardValues[i];
+            String valueName = valueNames[cardValue];
+            String suitName = suits[i % 4];
+
+            String imagePath = basePath + valueName + "_of_" + suitName + ".png";
+
+            switch (i) {
+                case 0:
+                    card1Image.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+                    break;
+                case 1:
+                    card2Image.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+                    break;
+                case 2:
+                    card3Image.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+                    break;
+                case 3:
+                    card4Image.setImage(new Image(getClass().getResourceAsStream(imagePath)));
+                    break;
+            }
+        }
     }
+
 
     @FXML
     private void verifyExpression() {
@@ -64,21 +88,26 @@ public class CardGameController {
         }
     }
 
-    private double evaluateExpression(String e) {
-        return 0;
+    private double evaluateExpression(String expression) throws Exception {
+        javax.script.ScriptEngineManager mgr = new javax.script.ScriptEngineManager();
+        javax.script.ScriptEngine engine = mgr.getEngineByName("JavaScript");
+        return (double) engine.eval(expression);
     }
 
     private boolean usesAllNumbers(String expression) {
         List<Integer> usedNumbers = new ArrayList<>();
         for (int num : cardValues) usedNumbers.add(num);
 
-        for (String token : expression.replaceAll("[^0-9]+", " ").trim().split(" ")) {
+        for (String token : expression.trim().split("\\s+")) {
             if (!token.isEmpty()) {
-                int value = Integer.parseInt(token);
-                if (!usedNumbers.remove((Integer) value)) return false;
+                try {
+                    int value = Integer.parseInt(token);
+                    if (!usedNumbers.remove((Integer) value)) return false;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
             }
         }
         return usedNumbers.isEmpty();
     }
-
 }
